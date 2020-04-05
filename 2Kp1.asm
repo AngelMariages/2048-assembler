@@ -224,6 +224,10 @@ getchP1:
 ;;;;;
 showNumberP1:
    push rbp
+   push rax
+   push rbx
+   push rcx
+   push rdx
    mov  rbp, rsp
 
    mov rax, 0
@@ -276,6 +280,10 @@ showNumberP1:
       jmp for
    fi:
       mov rsp, rbp
+      pop rdx
+      pop rcx
+      pop rbx
+      pop rax
       pop rbp
       ret
 
