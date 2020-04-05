@@ -313,11 +313,67 @@ updateBoardP1:
    push rbp
    mov  rbp, rsp
 
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push rsi
 
+   mov rax, 0
+   mov rbx, 10
 
-   mov rsp, rbp
-   pop rbp
-   ret
+   forUpdate:
+      cmp rax, DimMatrix*8
+      jl certUpdate
+      jmp fiUpdate
+
+   certUpdate:
+      mov rdx, 17
+      mov rsi, 0
+
+      forUpdate2:
+         cmp rsi, DimMatrix*2
+         jl certUpdate2
+         jmp fiUpdate2
+
+      certUpdate2:
+         mov cx, WORD[m+rax+rsi]
+         mov WORD[number], cx
+         mov BYTE[rowScreen], bl; rowScreen = rowScreenAux
+         mov BYTE[colScreen], dl; colScreen = colScreenAux
+
+         call showNumberP1
+
+         add rdx, 9; colScreenAux + 9
+         add rsi, 2; j++
+         jmp forUpdate2
+
+      fiUpdate2:
+         add rbx, 2; rowScreenAux + 2
+         add rax, 8; i++
+         jmp forUpdate
+   fiUpdate:
+      mov rax, [score]
+
+      mov DWORD[number], eax
+      mov BYTE[rowScreen], 18
+      mov BYTE[colScreen], 26
+
+      call showNumberP1
+
+      mov BYTE[rowScreen], 18
+      mov BYTE[colScreen], 28
+      call gotoxyP1
+
+      pop rsi
+      pop rdx
+      pop rcx
+      pop rbx
+      pop rax
+
+      mov rsp, rbp
+      pop rbp
+      ret
 
 
 ;;;;;
