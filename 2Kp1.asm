@@ -226,11 +226,58 @@ showNumberP1:
    push rbp
    mov  rbp, rsp
 
+   mov rax, 0
+   mov rbx, [number]; number és 290500
+
+   cmp rbx, 999999
+   jg massaGran
+   jmp for
+
+   massaGran:
+      mov rbx, 999999
 
 
-   mov rsp, rbp
-   pop rbp
-   ret
+   for:
+      cmp rax, 6
+      jl cert
+      jmp fi
+   cert:
+      mov BYTE[charac], ' '
+
+      cmp rbx, 0
+      jg nPositiu
+      jmp printChar
+
+      nPositiu:
+         mov rdx, rbx; posem a rdx el quocient anteriorment guardat
+         mov rcx, 0; resetejem el quocient a 0
+
+         cmp rdx, 9
+
+         jle fiBucle
+         bucle:
+            sub rdx, 10; residu
+            inc rcx ; quocient
+
+            cmp rdx, 10
+            jge bucle
+
+         fiBucle:
+            mov rbx, rcx; guardem el quocient a rbx
+            mov BYTE[charac], dl
+            add BYTE[charac], '0'
+
+      printChar:
+         call gotoxyP1
+         call printchP1
+         dec BYTE[colScreen]
+
+         inc rax
+      jmp for
+   fi:
+      mov rsp, rbp
+      pop rbp
+      ret
 
 
 ;;;;;
