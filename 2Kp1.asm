@@ -402,11 +402,54 @@ rotateMatrixRP1:
    push rbp
    mov  rbp, rsp
 
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+
+   mov rax, 0
+   mov rdx, 6
+
+   forRotate:
+      cmp rax, DimMatrix*8
+      jl certRotate
+      jmp fiRotate
+
+      certRotate:
+         mov rbx, 0
+         mov rsi, 0
+
+         forRotate2:
+            cmp rbx, DimMatrix*2
+            jl certRotate2
+            jmp fiRotate2
+
+         certRotate2:
+            mov cx, WORD[m+rax+rbx]
+            mov WORD[mRotated+rsi+rdx], cx
+
+            add rbx, 2; j++
+            add rsi, 8
+            jmp forRotate2
+         fiRotate2:
+            add rax, 8; i++
+            sub rdx, 2
+            jmp forRotate
 
 
-   mov rsp, rbp
-   pop rbp
-   ret
+      fiRotate:
+         call copyMatrixP1
+
+         pop rsi
+         pop rdx
+         pop rcx
+         pop rbx
+         pop rax
+
+         mov rsp, rbp
+         pop rbp
+         ret
 
 
 ;;;;;
