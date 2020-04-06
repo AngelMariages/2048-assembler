@@ -231,7 +231,7 @@ showNumberP1:
    mov  rbp, rsp
 
    mov rax, 0
-   mov rbx, [number]; number és 290500
+   movzx rbx, WORD[number]; number és 290500
 
    cmp rbx, 999999
    jg massaGran
