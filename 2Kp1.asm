@@ -231,7 +231,7 @@ showNumberP1:
    mov  rbp, rsp
 
    mov rax, 0
-   movzx rbx, WORD[number]; number és 290500
+   mov ebx, DWORD[number]; number és 290500
 
    cmp rbx, 999999
    jg massaGran
@@ -337,8 +337,8 @@ updateBoardP1:
          jmp fiUpdate2
 
       certUpdate2:
-         mov cx, WORD[m+rax+rsi]
-         mov WORD[number], cx
+         movzx ecx, WORD[m+rax+rsi]
+         mov DWORD[number], ecx
          mov BYTE[rowScreen], bl; rowScreen = rowScreenAux
          mov BYTE[colScreen], dl; colScreen = colScreenAux
 
