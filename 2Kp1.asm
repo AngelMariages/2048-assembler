@@ -469,11 +469,48 @@ copyMatrixP1:
    push rbp
    mov  rbp, rsp
 
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+
+   mov rax, 0
+
+   forCopy:
+      cmp rax, DimMatrix*8
+      jl certCopy
+      jmp fiCopy
+
+      certCopy:
+         mov rbx, 0
+
+         forCopy2:
+            cmp rbx, DimMatrix*2
+            jl certCopy2
+            jmp fiCopy2
+
+         certCopy2:
+            mov cx, WORD[mRotated+rax+rbx]
+            mov WORD[m+rax+rbx], cx
+
+            add rbx, 2; j++
+            jmp forCopy2
+         fiCopy2:
+            add rax, 8; i++
+            jmp forCopy
 
 
-   mov rsp, rbp
-   pop rbp
-   ret
+      fiCopy:
+         pop rsi
+         pop rdx
+         pop rcx
+         pop rbx
+         pop rax
+
+         mov rsp, rbp
+         pop rbp
+         ret
 
 
 ;;;;;
