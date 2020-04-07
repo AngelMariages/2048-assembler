@@ -540,11 +540,83 @@ shiftNumbersRP1:
    push rbp
    mov  rbp, rsp
 
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+
+   mov rax, DimMatrix*8
+   sub rax, 8
+
+   forShift:
+      cmp rax, 0
+      jge certShift
+      jmp fiShift
+
+      certShift:
+         mov rbx, DimMatrix*2
+         sub rbx, 2
+
+         forShift2:
+            cmp rbx, 0
+            jg certShift2
+            jmp fiShift2
+
+         certShift2:
+            mov cx, WORD[m+rax+rbx]
+            cmp cx, 0
+            je equal0
+            jmp outEqual
+
+            equal0:
+               mov rdx, rbx
+               sub rdx, 2
+
+               whileEqual:
+                  cmp rdx, 0
+                  jl fiWhile
+
+                  mov si, WORD[m+rax+rdx]
+                  cmp si, 0
+                  jne fiWhile
+
+               certWhile:
+                  sub rdx, 2
+                  jmp whileEqual
+               fiWhile:
+                  cmp rdx, -2
+                  je kNegativa
+                  jmp kPositiva
+
+                  kNegativa:
+                     mov rbx, 0
+                     jmp outEqual
+
+                  kPositiva:
+                     mov WORD[m+rax+rbx], si; m[i][j] = m[i][k];
+                     mov WORD[m+rax+rdx], 0; m[i][k] = 0;
+                     mov BYTE[state], '2'
+                     jmp outEqual
+
+            outEqual:
+               sub rbx, 2; j--
+               jmp forShift2
+         fiShift2:
+            sub rax, 8; i--
+            jmp forShift
 
 
-   mov rsp, rbp
-   pop rbp
-   ret
+      fiShift:
+         pop rsi
+         pop rdx
+         pop rcx
+         pop rbx
+         pop rax
+
+         mov rsp, rbp
+         pop rbp
+         ret
 
 
 ;;;;;
