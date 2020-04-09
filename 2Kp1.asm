@@ -650,11 +650,81 @@ addPairsRP1:
    push rbp
    mov  rbp, rsp
 
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+
+   mov rax, 0
+
+   mov rsi, DimMatrix*8
+   sub rsi, 8
+
+   forPairs:
+      cmp rsi, 0
+      jge certPairs
+      jmp fiPairs
+
+      certPairs:
+         mov rbx, DimMatrix*2
+         sub rbx, 2
+
+         forPairs2:
+            cmp rbx, 0
+            jg certPairs2
+            jmp fiPairs2
+
+         certPairs2:
+            mov cx, WORD[m+rsi+rbx]
+
+            cmp cx, 0
+            je fiIfPairs
+
+            mov dx, WORD[m+rsi+rbx-2]
+            cmp cx, dx
+            jne fiIfPairs
+
+            certIfParis:
+               push rax
+
+               mov eax, 2
+               mul cx
+
+               mov WORD[m+rsi+rbx], ax
+               mov WORD[m+rsi+rbx-2], 0
+
+               movzx rcx, ax
+               pop rax
+               add rax, rcx
+
+            fiIfPairs:
+               sub rbx, 2; j--
+               jmp forPairs2
+         fiPairs2:
+            sub rsi, 8; i--
+            jmp forPairs
 
 
-   mov rsp, rbp
-   pop rbp
-   ret
+      fiPairs:
+         cmp rax, 0
+         jg haFetPunts
+         jmp foraPairs
+
+         haFetPunts:
+            mov BYTE[state], '2'
+            add DWORD[score], eax
+
+         foraPairs:
+            pop rsi
+            pop rdx
+            pop rcx
+            pop rbx
+            pop rax
+
+            mov rsp, rbp
+            pop rbp
+            ret
 
 
 ;;;;;;
