@@ -6,46 +6,52 @@
  * AQUEST CODI NO ES POT MODIFICAR I NO S'HA DE LLIURAR.
  **/
 
-#include <stdio.h>
 #include <stdlib.h>
-#include <termios.h>  //termios, TCSANOW, ECHO, ICANON
-#include <unistd.h>   //STDIN_FILENO
+#include <stdio.h>
+#include <termios.h>     //termios, TCSANOW, ECHO, ICANON
+#include <unistd.h>      //STDIN_FILENO
 
-extern int developer;  // Variable declarada en assemblador que indica el nom
-                       // del programador
+extern int developer;    //Variable declarada en assemblador que indica el nom del programador
 
 /**
  * Constants
  */
-#define DimMatrix 4                      // dimensió de la matriu
-#define SizeMatrix DimMatrix *DimMatrix  //=16
+#define DimMatrix  4     //dimensió de la matriu
+#define SizeMatrix DimMatrix*DimMatrix //=16
+
 
 /**
  * Definició de variables globals
  */
-int rowScreen;  // Fila per a posicionar el cursor a la pantalla.
-int colScreen;  // Columna per a posicionar el cursor a la pantalla
-char charac;    // Caràcter llegit de teclat i per a escriure a pantalla
+int  rowScreen;//Fila per a posicionar el cursor a la pantalla.
+int  colScreen;//Columna per a posicionar el cursor a la pantalla
+char charac;   //Caràcter llegit de teclat i per a escriure a pantalla
+
 
 // Matriu 9x9 on guardem els números del joc.
 // Accés a les matrius en C: utilitzem fila (0..[DimMatrix-1]) i
 // columna(0..[DimMatrix-1]) (m[fila][columna]).
 // Accés a les matrius en assemblador: S'hi accedeix com si fos un vector
 // on indexMat (0..[DimMatrix*DimMatrix-1]).
-// indexMat=((fila*DimMatrix)+(columna))*2 (2 perquè la matriu és de tipus
-// short). WORD[m+indexMat] (WORD perquè és de tipus short) (indexMat ha de ser
-// un registre de tipus long/QWORD:RAX,RBX,..,RSI,RDI,..,R15).
-short m[DimMatrix][DimMatrix] = {
-    {8, 8, 32, 32}, {4, 32, 128, 64}, {0, 0, 256, 128}, {0, 4, 512, 1024}};
+// indexMat=((fila*DimMatrix)+(columna))*2 (2 perquè la matriu és de tipus short).
+// WORD[m+indexMat] (WORD perquè és de tipus short)
+// (indexMat ha de ser un registre de tipus long/QWORD:RAX,RBX,..,RSI,RDI,..,R15).
+short m[DimMatrix][DimMatrix]        = { {    8,    8,    32,    32},
+                                         {    4,   32,   128,    64},
+                                         {    0,    0,   256,   128},
+                                         {    0,    4,   512,  1024} };
 
-short mRotated[DimMatrix][DimMatrix] = {
-    {2, 0, 2, 0}, {2, 2, 4, 4}, {4, 4, 0, 4}, {4, 2, 2, 4}};
+short mRotated[DimMatrix][DimMatrix] = { {    2,    0,     2,     0},
+                                         {    2,    2,     4,     4},
+                                         {    4,    4,     0,     4},
+                                         {    4,    2,     2,     4} };
 
-int number;          // Numero que volem mostrar.
-int score = 290500;  // Punts acumulats al marcador.
-char state = '1';    // '0': Sortir, hem premut la tecla 'ESC' per a sortir.
-                     // '1': Continuem jugant.
-                   // '2': Continuem jugant però s'han fet canvis a la matriu.
+int   number;          //Numero que volem mostrar.
+int   score  = 290500; // Punts acumulats al marcador.
+char  state  = '1';    // '0': Sortir, hem premut la tecla 'ESC' per a sortir.
+                       // '1': Continuem jugant.
+                       // '2': Continuem jugant però s'han fet canvis a la matriu.
+
 
 /**
  * Definició de les funcions de C
@@ -84,6 +90,7 @@ extern void addPairsRP1();
 extern void readKeyP1();
 extern void playP1();
 
+
 /**
  * Esborrar la pantalla
  *
@@ -93,7 +100,12 @@ extern void playP1();
  * Aquesta funció no es crida des d'assemblador
  * i no hi ha definida una subrutina d'assemblador equivalent.
  */
-void clearScreen_C() { printf("\x1B[2J"); }
+void clearScreen_C(){
+
+    printf("\x1B[2J");
+
+}
+
 
 /**
  * Situar el cursor a la fila indicada per la variable (rowScreen) i a
@@ -108,7 +120,12 @@ void clearScreen_C() { printf("\x1B[2J"); }
  * processador. Això es fa perquè les funcions de C no mantenen
  * l'estat dels registres.
  */
-void gotoxyP1_C() { printf("\x1B[%d;%dH", rowScreen, colScreen); }
+void gotoxyP1_C(){
+
+   printf("\x1B[%d;%dH",rowScreen,colScreen);
+
+}
+
 
 /**
  * Mostrar un caràcter guardat a la variable (charac) a la pantalla,
@@ -121,7 +138,12 @@ void gotoxyP1_C() { printf("\x1B[%d;%dH", rowScreen, colScreen); }
  * cridar aquesta funció guardant l'estat dels registres del processador.
  * Això es fa perquè les funcions de C no mantenen l'estat dels registres.
  */
-void printchP1_C() { printf("%c", charac); }
+void printchP1_C(){
+
+   printf("%c",charac);
+
+}
+
 
 /**
  * Llegir una tecla i guardar el caràcter associat a la variable (charac)
@@ -135,31 +157,32 @@ void printchP1_C() { printf("%c", charac); }
  * Això es fa perquè les funcions de C no mantenen l'estat dels
  * registres.
  */
-void getchP1_C() {
-    static struct termios oldt, newt;
+void getchP1_C(){
 
-    /*tcgetattr obtenir els paràmetres del terminal
-    STDIN_FILENO indica que s'escriguin els paràmetres de l'entrada estàndard
-    (STDIN) sobre oldt*/
-    tcgetattr(STDIN_FILENO, &oldt);
-    /*es copien els paràmetres*/
-    newt = oldt;
+   static struct termios oldt, newt;
 
-    /* ~ICANON per a tractar l'entrada de teclat caràcter a caràcter no com a
-       línia sencera acabada amb /n ~ECHO per a què no mostri el caràcter
-       llegit*/
-    newt.c_lflag &= ~(ICANON | ECHO);
+   /*tcgetattr obtenir els paràmetres del terminal
+   STDIN_FILENO indica que s'escriguin els paràmetres de l'entrada estàndard (STDIN) sobre oldt*/
+   tcgetattr( STDIN_FILENO, &oldt);
+   /*es copien els paràmetres*/
+   newt = oldt;
 
-    /*Fixar els nous paràmetres del terminal per a l'entrada estàndard (STDIN)
-    TCSANOW indica a tcsetattr que canvii els paràmetres immediatament. */
-    tcsetattr(STDIN_FILENO, TCSANOW, &newt);
+   /* ~ICANON per a tractar l'entrada de teclat caràcter a caràcter no com a línia sencera acabada amb /n
+      ~ECHO per a què no mostri el caràcter llegit*/
+   newt.c_lflag &= ~(ICANON | ECHO);
 
-    /*Llegir un caràcter*/
-    charac = (char)getchar();
+   /*Fixar els nous paràmetres del terminal per a l'entrada estàndard (STDIN)
+   TCSANOW indica a tcsetattr que canvii els paràmetres immediatament. */
+   tcsetattr( STDIN_FILENO, TCSANOW, &newt);
 
-    /*restaurar els paràmetres originals*/
-    tcsetattr(STDIN_FILENO, TCSANOW, &oldt);
+   /*Llegir un caràcter*/
+   charac = (char) getchar();
+
+   /*restaurar els paràmetres originals*/
+   tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
+
 }
+
 
 /**
  * Mostrar a la pantalla el menú del joc i demana una opció.
@@ -174,14 +197,14 @@ void getchP1_C() {
  * Aquesta funció no es crida des d'assemblador
  * i no hi ha definida una subrutina d'assemblador equivalent.
  */
-void printMenuP1_C() {
+void printMenuP1_C(){
     clearScreen_C();
     rowScreen = 1;
     colScreen = 1;
     gotoxyP1_C();
     printf("                                    \n");
     printf("           Developed by:            \n");
-    printf("        ( %s )   \n", (char *)&developer);
+    printf("        ( %s )   \n",(char *)&developer);
     printf(" __________________________________ \n");
     printf("|                                  |\n");
     printf("|            MAIN MENU             |\n");
@@ -202,15 +225,17 @@ void printMenuP1_C() {
     printf("|            OPTION:               |\n");
     printf("|__________________________________|\n");
 
-    charac = ' ';
+    charac=' ';
     while (charac < '0' || charac > '9') {
-        rowScreen = 21;
-        colScreen = 22;
-        gotoxyP1_C();   // posicionar el cursor
-        getchP1_C();    // Llegir una opció
-        printchP1_C();  // Mostrar opció
-    }
+      rowScreen = 21;
+      colScreen = 22;
+      gotoxyP1_C();           //posicionar el cursor
+      getchP1_C();            //Llegir una opció
+      printchP1_C();          //Mostrar opció
+   }
+
 }
+
 
 /**
  * Mostrar el tauler de joc a la pantalla. Les línies del tauler.
@@ -222,33 +247,36 @@ void printMenuP1_C() {
  * Aquesta funció es crida des de C i des d'assemblador,
  * i no hi ha definida una subrutina d'assemblador equivalent.
  */
-void printBoardP1_C() {
-    rowScreen = 1;
-    colScreen = 1;
-    gotoxyP1_C();
-    printf(" _________________________________________________  \n");  // 01
-    printf("|                                                  |\n");  // 02
-    printf("|                  2048 PUZZLE  v1.0               |\n");  // 03
-    printf("|                                                  |\n");  // 04
-    printf("|     Join the numbers and get to the 2048 tile!   |\n");  // 05
-    printf("|__________________________________________________|\n");  // 06
-    printf("|                                                  |\n");  // 07
-    printf("|            0        1        2        3          |\n");  // 08
-    printf("|        +--------+--------+--------+--------+     |\n");  // 09
-    printf("|      0 |        |        |        |        |     |\n");  // 10
-    printf("|        +--------+--------+--------+--------+     |\n");  // 11
-    printf("|      1 |        |        |        |        |     |\n");  // 12
-    printf("|        +--------+--------+--------+--------+-    |\n");  // 13
-    printf("|      2 |        |        |        |        |     |\n");  // 14
-    printf("|        +--------+--------+--------+--------+     |\n");  // 15
-    printf("|      3 |        |        |        |        |     |\n");  // 16
-    printf("|        +--------+--------+--------+--------+     |\n");  // 17
-    printf("|          Score:   ______                         |\n");  // 18
-    printf("|__________________________________________________|\n");  // 19
-    printf("|                                                  |\n");  // 20
-    printf("|  (ESC)Exit  (i)Up   (j)Left  (k)Down  (l)Right   |\n");  // 21
-    printf("|__________________________________________________|\n");  // 22
+void printBoardP1_C(){
+
+   rowScreen = 1;
+   colScreen = 1;
+   gotoxyP1_C();
+   printf(" _________________________________________________  \n"); //01
+   printf("|                                                  |\n"); //02
+   printf("|                  2048 PUZZLE  v1.0               |\n"); //03
+   printf("|                                                  |\n"); //04
+   printf("|     Join the numbers and get to the 2048 tile!   |\n"); //05
+   printf("|__________________________________________________|\n"); //06
+   printf("|                                                  |\n"); //07
+   printf("|            0        1        2        3          |\n"); //08
+   printf("|        +--------+--------+--------+--------+     |\n"); //09
+   printf("|      0 |        |        |        |        |     |\n"); //10
+   printf("|        +--------+--------+--------+--------+     |\n"); //11
+   printf("|      1 |        |        |        |        |     |\n"); //12
+   printf("|        +--------+--------+--------+--------+-    |\n"); //13
+   printf("|      2 |        |        |        |        |     |\n"); //14
+   printf("|        +--------+--------+--------+--------+     |\n"); //15
+   printf("|      3 |        |        |        |        |     |\n"); //16
+   printf("|        +--------+--------+--------+--------+     |\n"); //17
+   printf("|          Score:   ______                         |\n"); //18
+   printf("|__________________________________________________|\n"); //19
+   printf("|                                                  |\n"); //20
+   printf("|  (ESC)Exit  (i)Up   (j)Left  (k)Down  (l)Right   |\n"); //21
+   printf("|__________________________________________________|\n"); //22
+
 }
+
 
 /**
  * Converteix el número de la variable (number) de tipus short de 6 dígits
@@ -279,23 +307,26 @@ void printBoardP1_C() {
  * Aquesta funció no es crida des d'assemblador.
  * Hi ha una subrutina en assemblador equivalent 'showNumberP1',
  */
-void showNumberP1_C() {
-    int n = number;
-    int i;
+ void showNumberP1_C() {
 
-    if (n > 999999) n = 999999;
-    for (i = 0; i < 6; i++) {
-        charac = ' ';
-        if (n > 0) {
-            charac = n % 10;  // residu
-            n = n / 10;       // quocient
-            charac = charac + '0';
-        }
-        gotoxyP1_C();
-        printchP1_C();
-        colScreen--;
-    }
+   int n = number;
+   int i;
+
+   if (n > 999999) n = 999999;
+   for (i=0;i<6;i++){
+     charac = ' ';
+     if (n > 0) {
+	   charac = n%10;     //residu
+	   n = n/10;          //quocient
+	   charac = charac + '0';
+	 }
+     gotoxyP1_C();
+     printchP1_C();
+     colScreen--;
+   }
+
 }
+
 
 /**
  * Actualitzar el contingut del Tauler de Joc amb les dades de la matriu
@@ -318,32 +349,35 @@ void showNumberP1_C() {
  * Aquesta funció no es crida des d'assemblador.
  * Hi ha una subrutina en assemblador equivalent 'updateBoardP1',
  */
-void updateBoardP1_C() {
-    int i, j;
-    int rowScreenAux;
-    int colScreenAux;
+void updateBoardP1_C(){
 
-    rowScreenAux = 10;
-    for (i = 0; i < DimMatrix; i++) {
-        colScreenAux = 17;
-        for (j = 0; j < DimMatrix; j++) {
-            number = m[i][j];
-            rowScreen = rowScreenAux;
-            colScreen = colScreenAux;
-            showNumberP1_C();
-            colScreenAux = colScreenAux + 9;
-        }
-        rowScreenAux = rowScreenAux + 2;
-    }
+   int i,j;
+   int rowScreenAux;
+   int colScreenAux;
 
-    number = score;
-    rowScreen = 18;
-    colScreen = 26;
-    showNumberP1_C();
-    rowScreen = 18;
-    colScreen = 28;
-    gotoxyP1_C();
+   rowScreenAux = 10;
+   for (i=0;i<DimMatrix;i++){
+     colScreenAux = 17;
+      for (j=0;j<DimMatrix;j++){
+         number = m[i][j];
+         rowScreen = rowScreenAux;
+         colScreen = colScreenAux;
+         showNumberP1_C();
+         colScreenAux = colScreenAux + 9;
+      }
+      rowScreenAux = rowScreenAux + 2;
+   }
+
+   number = score;
+   rowScreen = 18;
+   colScreen = 26;
+   showNumberP1_C();
+   rowScreen = 18;
+   colScreen = 28;
+   gotoxyP1_C();
+
 }
+
 
 /**
  * Rotar a la la dreta la matriu (m), sobre la matriu (mRotated). La
@@ -366,16 +400,19 @@ void updateBoardP1_C() {
  * Hi ha una subrutina en assemblador equivalent 'rotateMatrixRP1',
  */
 void rotateMatrixRP1_C() {
-    int i, j;
 
-    for (i = 0; i < DimMatrix; i++) {
-        for (j = 0; j < DimMatrix; j++) {
-            mRotated[j][DimMatrix - 1 - i] = m[i][j];
-        }
-    }
+   int i,j;
 
-    copyMatrixP1_C();
+   for (i=0; i<DimMatrix; i++) {
+      for (j=0; j<DimMatrix; j++) {
+         mRotated[j][DimMatrix-1-i] = m[i][j];
+      }
+   }
+
+   copyMatrixP1_C();
+
 }
+
 
 /**
  * Copiar els valors de la matriu (mRotated) a la matriu (m).
@@ -391,14 +428,17 @@ void rotateMatrixRP1_C() {
  * Hi ha una subrutina en assemblador equivalent 'copyMatrixP1',
  */
 void copyMatrixP1_C() {
-    int i, j;
 
-    for (i = 0; i < DimMatrix; i++) {
-        for (j = 0; j < DimMatrix; j++) {
-            m[i][j] = mRotated[i][j];
-        }
-    }
+   int i,j;
+
+   for (i=0; i<DimMatrix; i++) {
+      for (j=0; j<DimMatrix; j++) {
+         m[i][j] = mRotated[i][j];
+      }
+   }
+
 }
+
 
 /**
  * Desplaça a la dreta els números de cada fila de la matriu (m),
@@ -421,24 +461,27 @@ void copyMatrixP1_C() {
  * Hi ha una subrutina en assemblador equivalent 'ShiftNumbersRP1',
  */
 void shiftNumbersRP1_C() {
-    int i, j, k;
 
-    for (i = DimMatrix - 1; i >= 0; i--) {
-        for (j = DimMatrix - 1; j > 0; j--) {
-            if (m[i][j] == 0) {
-                k = j - 1;
-                while (k >= 0 && m[i][k] == 0) k--;
-                if (k == -1) {
-                    j = 0;
-                } else {
-                    m[i][j] = m[i][k];
-                    m[i][k] = 0;
-                    state = '2';
-                }
-            }
+   int i,j,k;
+
+   for (i=DimMatrix-1; i>=0; i--) {
+      for (j=DimMatrix-1; j>0; j--) {
+        if (m[i][j] == 0) {
+          k = j-1;
+          while (k>=0 && m[i][k]==0) k--;
+          if (k==-1) {
+             j=0;
+          } else {
+            m[i][j]=m[i][k];
+             m[i][k]= 0;
+             state='2';
+          }
         }
+      }
     }
+
 }
+
 
 /**
  * Aparellar nombres iguals des la dreta de la matriu (m) i acumular
@@ -465,24 +508,27 @@ void shiftNumbersRP1_C() {
  * Hi ha una subrutina en assemblador equivalent 'addPairsRP1',
  */
 void addPairsRP1_C() {
-    int i, j;
-    short p = 0;
 
-    for (i = DimMatrix - 1; i >= 0; i--) {
-        for (j = DimMatrix - 1; j > 0; j--) {
-            if ((m[i][j] != 0) && (m[i][j] == m[i][j - 1])) {
-                m[i][j] = m[i][j] * 2;
-                m[i][j - 1] = 0;
-                p = p + m[i][j];
-            }
-        }
-    }
+   int i,j;
+   short p = 0;
 
-    if (p > 0) {
-        state = '2';
-        score = score + p;
-    }
+   for (i=DimMatrix-1; i>=0; i--) {
+      for (j=DimMatrix-1; j>0; j--) {
+         if ((m[i][j]!=0) && (m[i][j]==m[i][j-1])) {
+            m[i][j]  = m[i][j]*2;
+            m[i][j-1]= 0;
+            p = p + m[i][j];
+         }
+      }
+   }
+
+   if (p > 0) {
+      state = '2';
+      score = score + p;
+   }
+
 }
+
 
 /**
  * Llegir una tecla cridant la funció getchP1_C que quedarà guardada
@@ -511,53 +557,56 @@ void addPairsRP1_C() {
  * Aquesta funció no es crida des d'assemblador.
  * Hi ha una subrutina en assemblador equivalent 'readKeyP1'.
  */
-void readKeyP1_C() {
-    getchP1_C();
+void readKeyP1_C(){
 
-    switch (charac) {
-        case 'i':  // i:(105) amunt
-            rotateMatrixRP1_C();
+   getchP1_C();
 
-            shiftNumbersRP1_C();
-            addPairsRP1_C();
-            shiftNumbersRP1_C();
+   switch(charac){
+      case 'i': //i:(105) amunt
+         rotateMatrixRP1_C();
 
-            rotateMatrixRP1_C();
-            rotateMatrixRP1_C();
-            rotateMatrixRP1_C();
-            break;
-        case 'j':  // j:(106) esquerra
-            rotateMatrixRP1_C();
-            rotateMatrixRP1_C();
+         shiftNumbersRP1_C();
+         addPairsRP1_C();
+         shiftNumbersRP1_C();
 
-            shiftNumbersRP1_C();
-            addPairsRP1_C();
-            shiftNumbersRP1_C();
+         rotateMatrixRP1_C();
+         rotateMatrixRP1_C();
+         rotateMatrixRP1_C();
+      break;
+      case 'j': //j:(106) esquerra
+         rotateMatrixRP1_C();
+         rotateMatrixRP1_C();
 
-            rotateMatrixRP1_C();
-            rotateMatrixRP1_C();
-            break;
-        case 'k':  // k:(107) avall
-            rotateMatrixRP1_C();
-            rotateMatrixRP1_C();
-            rotateMatrixRP1_C();
+         shiftNumbersRP1_C();
+         addPairsRP1_C();
+         shiftNumbersRP1_C();
 
-            shiftNumbersRP1_C();
-            addPairsRP1_C();
-            shiftNumbersRP1_C();
+         rotateMatrixRP1_C();
+         rotateMatrixRP1_C();
+      break;
+      case 'k': //k:(107) avall
+         rotateMatrixRP1_C();
+         rotateMatrixRP1_C();
+         rotateMatrixRP1_C();
 
-            rotateMatrixRP1_C();
-            break;
-        case 'l':  // l:(108) dreta
-            shiftNumbersRP1_C();
-            addPairsRP1_C();
-            shiftNumbersRP1_C();
-            break;
-        case 27:  // ESC:(27) Sortir del programa
-            state = '0';
-            break;
-    }
+         shiftNumbersRP1_C();
+         addPairsRP1_C();
+         shiftNumbersRP1_C();
+
+         rotateMatrixRP1_C();
+      break;
+      case 'l': //l:(108) dreta
+         shiftNumbersRP1_C();
+         addPairsRP1_C();
+         shiftNumbersRP1_C();
+      break;
+     case 27: //ESC:(27) Sortir del programa
+       state = '0';
+     break;
+   }
+
 }
+
 
 /**
  * Generar nova fitxa de forma aleatòria.
@@ -572,28 +621,31 @@ void readKeyP1_C() {
  * i no hi ha definida una subrutina d'assemblador equivalent.
  */
 void insertTileP1_C() {
-    int i, j, k, l;
 
-    i = DimMatrix;  // Mirem si hi ha una casella buida.
-    do {
-        i--;
-        j = DimMatrix;
-        do {
-            j--;
-        } while ((j >= 0) && (m[i][j] != 0));
-    } while ((i >= 0) && (m[i][j] != 0));
+   int i,j,k,l;
 
-    // Inserim el 2 si hi ha com a mínim una casella buida.
-    if (m[i][j] == 0) {
-        do {  // Genera files i columnes aleatòriament fins que troba
-              // una posició buida
-            k = rand() % 4;
-            l = rand() % 4;
-        } while (m[k][l] != 0);
+   i=DimMatrix; // Mirem si hi ha una casella buida.
+   do {
+      i--;
+      j=DimMatrix;
+      do {
+         j--;
+      } while ((j>=0) && (m[i][j]!=0));
+   } while ((i>=0) && (m[i][j]!=0));
 
-        m[k][l] = 2;  // Posem un 2
-    }
+   //Inserim el 2 si hi ha com a mínim una casella buida.
+   if (m[i][j]==0) {
+      do { // Genera files i columnes aleatòriament fins que troba
+          // una posició buida
+         k = rand() % 4; l = rand() % 4; }
+      while( m[k][l] != 0 );
+
+      m[k][l] = 2; //Posem un 2
+
+   }
+
 }
+
 
 /**
  * Mostra un missatge a sota del tauler, al costat del marcador, segons
@@ -610,16 +662,19 @@ void insertTileP1_C() {
  * i no hi ha definida una subrutina d'assemblador equivalent.
  */
 void printMessageP1_C() {
-    switch (state) {
-        case '0':
-            rowScreen = 23;
-            colScreen = 12;
-            gotoxyP1_C();
-            printf("<<<<<< EXIT: (ESC) Pressed >>>>>>");
-            break;
-    }
-    getchP1_C();
+
+   switch(state){
+      case '0':
+         rowScreen = 23;
+         colScreen = 12;
+         gotoxyP1_C();
+         printf("<<<<<< EXIT: (ESC) Pressed >>>>>>");
+      break;
+   }
+   getchP1_C();
+
 }
+
 
 /**
  * Joc del 2048
@@ -649,22 +704,25 @@ void printMessageP1_C() {
  * Sortir:
  * S'acabat el joc.
  */
-void playP1_C() {
-    state = '1';  // Estado para empezar a jugar
+void playP1_C(){
 
-    clearScreen_C();
-    printBoardP1_C();
-    updateBoardP1_C();
-    while (state == '1') {  // Bucle principal.
-        readKeyP1_C();
-        if (state == '2') {    // Si s'ha fet algun moviment
-            insertTileP1_C();  // Afegir fitxa (2)
-            state = '1';
-        }
-        updateBoardP1_C();
-    }
-    printMessageP1_C();  // Mostra el missatge per a indicar com acaba.
+   state = '1';               //Estado para empezar a jugar
+
+   clearScreen_C();
+   printBoardP1_C();
+   updateBoardP1_C();
+   while (state == '1') {     //Bucle principal.
+      readKeyP1_C();
+      if (state == '2') {     //Si s'ha fet algun moviment
+         insertTileP1_C();    //Afegir fitxa (2)
+         state = '1';
+      }
+      updateBoardP1_C();
+   }
+   printMessageP1_C();        //Mostra el missatge per a indicar com acaba.
+
 }
+
 
 /**
  * Programa Principal
@@ -675,110 +733,111 @@ void playP1_C() {
  * Per al joc complet hi ha una opció per la versió en assemblador i
  * una opció pel joc en C.
  */
-int main(void) {
-    while (charac != '0') {
-        clearScreen_C();
-        printMenuP1_C();  // Mostrar menú i demana opció
+int main(void){
 
-        switch (charac) {
-            case '1':              // Mostrar punts
-                clearScreen_C();   // Esborrar la pantalla
-                printBoardP1_C();  // Mostrar el tauler
-                rowScreen = 18;
-                colScreen = 30;
-                gotoxyP1_C();
-                printf(" Press any key ");
-                //=======================================================
-                rowScreen = 18;
-                colScreen = 26;
-                number = score;
-                showNumberP1();
-                //showNumberP1_C();
-                //=======================================================
-                getchP1_C();
-                break;
-            case '2':              // Actualitzar el contingut del tauler.
-                clearScreen_C();   // Esborrar la pantalla
-                printBoardP1_C();  // Mostrar el tauler
-                //=======================================================
-                updateBoardP1();
-                // updateBoardP1_C();
-                //=======================================================
-                rowScreen = 18;
-                colScreen = 30;
-                gotoxyP1_C();
-                printf(" Press any key ");
-                getchP1_C();
-                break;
-            case '3':              // copiar matriu mRotated a m
-                clearScreen_C();   // Esborrar la pantalla
-                printBoardP1_C();  // Mostrar el tauler
-                //===================================================
-                copyMatrixP1();
-                // copyMatrixP1_C();
-                //===================================================
-                updateBoardP1_C();  // Actualitzar el contingut del tauler
-                rowScreen = 18;
-                colScreen = 30;
-                gotoxyP1_C();
-                printf(" Press any key ");
-                getchP1_C();
-                break;
-            case '4':              // Rotar matriu a la dreta
-                clearScreen_C();   // Esborrar la pantalla
-                printBoardP1_C();  // Mostrar el tauler
-                //===================================================
-                rotateMatrixRP1();
-                // rotateMatrixRP1_C();
-                //===================================================
-                updateBoardP1_C();  // Actualitzar el contingut del tauler
-                rowScreen = 18;
-                colScreen = 30;
-                gotoxyP1_C();
-                printf(" Press any key ");
-                getchP1_C();
-                break;
-            case '5':              // Desplaça números a l'esquerra
-                clearScreen_C();   // Esborrar la pantalla
-                printBoardP1_C();  // Mostrar el tauler
-                //===================================================
-                shiftNumbersRP1();
-                // shiftNumbersRP1_C();
-                //===================================================
-                updateBoardP1_C();  // Actualitzar el contingut del tauler
-                rowScreen = 18;
-                colScreen = 30;
-                gotoxyP1_C();
-                printf(" Press any key ");
-                getchP1_C();
-                break;
-            case '6':              // Sumar parelles
-                clearScreen_C();   // Esborrar la pantalla
-                printBoardP1_C();  // Mostrar el tauler
-                //===================================================
-                addPairsRP1();  // Sumar parelles i calcular punts
-                // addPairsRP1_C();
-                //===================================================
-                updateBoardP1_C();  // Actualitzar el contingut del tauler
-                rowScreen = 20;
-                colScreen = 30;
-                gotoxyP1_C();
-                printf(" Press any key ");
-                getchP1_C();
-                break;
-            case '8':  // Joc complet Assemblador
-                //=======================================================
-                playP1();
-                //=======================================================
-                break;
-            case '9':  // Joc complet C
-                //=======================================================
-                playP1_C();
-                //=======================================================
-                break;
-        }
-    }
-    printf("\n\n");
+   while (charac!='0') {
+     clearScreen_C();
+     printMenuP1_C();    //Mostrar menú i demana opció
 
-    return 0;
+      switch(charac){
+         case '1':// Mostrar punts
+            clearScreen_C();  //Esborrar la pantalla
+            printBoardP1_C(); //Mostrar el tauler
+            rowScreen = 18;
+            colScreen = 30;
+            gotoxyP1_C();
+            printf(" Press any key ");
+            //=======================================================
+            rowScreen = 18;
+            colScreen = 26;
+            number = score;
+            showNumberP1();
+            //showNumberP1_C();
+            //=======================================================
+            getchP1_C();
+         break;
+         case '2': //Actualitzar el contingut del tauler.
+            clearScreen_C();  //Esborrar la pantalla
+            printBoardP1_C(); //Mostrar el tauler
+            //=======================================================
+            updateBoardP1();
+            //updateBoardP1_C();
+            //=======================================================
+            rowScreen = 18;
+            colScreen = 30;
+            gotoxyP1_C();
+            printf(" Press any key ");
+            getchP1_C();
+         break;
+         case '3': //copiar matriu mRotated a m
+            clearScreen_C();  //Esborrar la pantalla
+            printBoardP1_C(); //Mostrar el tauler
+            //===================================================
+            copyMatrixP1();
+            //copyMatrixP1_C();
+            //===================================================
+            updateBoardP1_C();//Actualitzar el contingut del tauler
+            rowScreen = 18;
+            colScreen = 30;
+            gotoxyP1_C();
+            printf(" Press any key ");
+            getchP1_C();
+         break;
+         case '4': //Rotar matriu a la dreta
+            clearScreen_C();  //Esborrar la pantalla
+            printBoardP1_C(); //Mostrar el tauler
+            //===================================================
+            rotateMatrixRP1();
+            //rotateMatrixRP1_C();
+            //===================================================
+            updateBoardP1_C();//Actualitzar el contingut del tauler
+            rowScreen = 18;
+            colScreen = 30;
+            gotoxyP1_C();
+            printf(" Press any key ");
+            getchP1_C();
+         break;
+         case '5': //Desplaça números a l'esquerra
+            clearScreen_C();  //Esborrar la pantalla
+            printBoardP1_C(); //Mostrar el tauler
+            //===================================================
+            shiftNumbersRP1();
+            //shiftNumbersRP1_C();
+            //===================================================
+            updateBoardP1_C();//Actualitzar el contingut del tauler
+            rowScreen = 18;
+            colScreen = 30;
+            gotoxyP1_C();
+            printf(" Press any key ");
+            getchP1_C();
+         break;
+         case '6': //Sumar parelles
+            clearScreen_C();  //Esborrar la pantalla
+            printBoardP1_C(); //Mostrar el tauler
+            //===================================================
+            addPairsRP1();   //Sumar parelles i calcular punts
+            //addPairsRP1_C();
+            //===================================================
+            updateBoardP1_C();//Actualitzar el contingut del tauler
+            rowScreen = 20;
+            colScreen = 30;
+            gotoxyP1_C();
+            printf(" Press any key ");
+            getchP1_C();
+         break;
+         case '8': //Joc complet Assemblador
+            //=======================================================
+            playP1();
+            //=======================================================
+         break;
+         case '9': //Joc complet C
+            //=======================================================
+            playP1_C();
+            //=======================================================
+         break;
+      }
+   }
+   printf("\n\n");
+
+   return 0;
 }
