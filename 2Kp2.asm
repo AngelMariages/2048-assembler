@@ -1165,12 +1165,122 @@ readKeyP2:
 checkEndP2:
    push rbp
    mov  rbp, rsp
+   ;guardem l'estat dels registres del processador perquè
+   ;les funcions de C no mantenen l'estat dels registres.
+
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+   push rdi
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
+   push r14
+   push r15
+
+   mov rax, 0 ; zeros
+   mov rbx, 0 ; pairs
+
+   mov rcx, DimMatrix*8 ; i
+
+   primerWhile:
+      sub rcx, 8 ; i--
+      mov rdx, DimMatrix*2 ; j
+
+      segonWhile:
+         sub rdx, 2 ; j--
+
+         movzx rsi, WORD[m+rcx+rdx]
+
+         cmp rsi, 0
+         jne comproba2048
+
+         sumaZeros:
+            inc rax
+
+         comproba2048:
+            cmp si, 2048
+            jne condicioSegonWhile
+
+         canviaState4:
+            mov BYTE[state], '4'
+
+      condicioSegonWhile:
+         cmp rdx, 0
+         jg segonaCondicioSegonWhile
+         jmp condicioPrimerWhile
+
+         segonaCondicioSegonWhile:
+            cmp si, 2048
+            jne segonWhile
+            jmp condicioPrimerWhile
+
+   condicioPrimerWhile:
+      cmp rcx, 0
+      jg segonaCondicioPrimerWhile
+      jmp comprobaAcabat
+
+      segonaCondicioPrimerWhile:
+         cmp si, 2048
+         jne primerWhile
+
+   comprobaAcabat:
+      cmp BYTE[state], '4'
+      jne comprobaAcabatSegonaCondicio
+      jmp fiComprobaAcabat
+
+      comprobaAcabatSegonaCondicio:
+         cmp rax, 0
+         je comprobaMesMoviments
+         jmp fiComprobaAcabat
+
+      comprobaMesMoviments:
+         mov rdi, mAux
+         mov rsi, m
+         call copyMatrixP2; rdi destinacio, rsi origen
+
+         ; rdi ja es la matriu que volem fer parelles
+         call addPairsRP2 ; rdi matriu per fer parelles, eax punts obtinguts
+
+         ; rdi ja es la matriu que volem rotar
+         call rotateMatrixRP2; rdi matriu que volem rotar
+
+         mov r8d, eax ; guardem el valor actual de pairs a r8d
+
+         ; rdi ja es la matriu que volem fer parelles
+         call addPairsRP2 ; rdi matriu per fer parelles, eax punts obtinguts
+
+         add r8d, eax ; sumem el nou resultat d'addPairs
+
+         cmp r8d, 0
+         jne fiComprobaAcabat
+         mov BYTE[state], '5'
 
 
+   fiComprobaAcabat:
+      pop r15
+      pop r14
+      pop r13
+      pop r12
+      pop r11
+      pop r10
+      pop r9
+      pop r8
+      pop rdi
+      pop rsi
+      pop rdx
+      pop rcx
+      pop rbx
+      pop rax
 
-   mov rsp, rbp
-   pop rbp
-   ret
+      mov rsp, rbp
+      pop rbp
+      ret
 
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
