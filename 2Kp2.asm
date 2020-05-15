@@ -366,12 +366,101 @@ showNumberP2:
 updateBoardP2:
    push rbp
    mov  rbp, rsp
+   ;guardem l'estat dels registres del processador perquè
+   ;les funcions de C no mantenen l'estat dels registres.
+
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
+   push r14
+   push r15
+
+   mov rax, 0
+   mov rbx, 10
+
+   forUpdate:
+      cmp rax, DimMatrix*8
+      jl certUpdate
+      jmp fiUpdate
+
+   certUpdate:
+      mov rdx, 17
+      mov rsi, 0
+
+      forUpdate2:
+         cmp rsi, DimMatrix*2
+         jl certUpdate2
+         jmp fiUpdate2
+
+      certUpdate2:
+         movzx ecx, WORD[m+rax+rsi]
+
+         push rdi ; fila
+         push rsi ; columna
+         push rdx ; numero
+
+         mov rdi, rbx
+         mov rsi, rdx
+         mov edx, ecx
+
+         call showNumberP2
+
+         pop rdx
+         pop rsi
+         pop rdi
 
 
+         add rdx, 9; colScreenAux + 9
+         add rsi, 2; j++
+         jmp forUpdate2
 
-   mov rsp, rbp
-   pop rbp
-   ret
+      fiUpdate2:
+         add rbx, 2; rowScreenAux + 2
+         add rax, 8; i++
+         jmp forUpdate
+   fiUpdate:
+      push rax ; auxiliar
+      push rdi ; fila
+      push rsi ; columna
+      push rdx ; numero
+
+      mov rax, rdi
+      mov rdi, 18
+      mov rsi, 26
+      mov rdx, rax
+
+      call showNumberP2
+
+      pop rax
+      pop rdx
+      pop rsi
+      pop rdi
+
+      pop r15
+      pop r14
+      pop r13
+      pop r12
+      pop r11
+      pop r10
+      pop r9
+      pop r8
+      pop rsi
+      pop rdx
+      pop rcx
+      pop rbx
+      pop rax
+
+      mov rsp, rbp
+      pop rbp
+      ret
 
 
 ;;;;;
