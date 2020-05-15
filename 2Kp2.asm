@@ -695,12 +695,131 @@ copyMatrixP2:
 shiftNumbersRP2:
    push rbp
    mov  rbp, rsp
+   ;guardem l'estat dels registres del processador perquè
+   ;les funcions de C no mantenen l'estat dels registres.
+
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
+   push r14
+   push r15
+
+   mov rax, DimMatrix*8
+   sub rax, 8
+   mov r8, 0 ; farem servir r8 per a sumar els desplaçaments fets, al final mourem el valor de r8 a rax
+
+   forShift:
+      cmp rax, 0
+      jge certShift
+      jmp fiShift
+
+      certShift:
+         mov rbx, DimMatrix*2
+         sub rbx, 2
+
+         forShift2:
+            cmp rbx, 0
+            jg certShift2
+            jmp fiShift2
+
+         certShift2:
+            push rax ; guardem rax
+            add rax, rbx
+
+            mov cx, [edi+eax]
+
+            pop rax ; tornem el valor de rax
+
+            cmp cx, 0
+            je equal0
+            jmp outEqual
+
+            equal0:
+               mov rdx, rbx
+               sub rdx, 2
+
+               whileEqual:
+                  cmp rdx, 0
+                  jl fiWhile
+
+                  push rax ; guardem rax
+
+                  add rax, rdx
+
+                  mov si, [edi+eax]
+
+                  pop rax ; tornem el valor de rax
+
+                  cmp si, 0
+                  jne fiWhile
+
+               certWhile:
+                  sub rdx, 2
+                  jmp whileEqual
+               fiWhile:
+                  cmp rdx, -2
+                  je kNegativa
+                  jmp kPositiva
+
+                  kNegativa:
+                     mov rbx, 0
+                     jmp outEqual
+
+                  kPositiva:
+                     push rax ; guardem rax
+
+                     add rax, rbx
+
+                     mov WORD[edi+eax], si; m[i][j] = m[i][k];
+
+                     pop rax ; tornem el valor de rax
+
+                     push rax ; guardem el valor de rax
+
+                     add rax, rdx
+
+                     mov WORD[edi+eax], 0; m[i][k] = 0;
+
+                     pop rax ; tornem el valor de rax
+
+                     inc r8 ; incrementem els desplaçaments
+
+                     jmp outEqual
+
+            outEqual:
+               sub rbx, 2; j--
+               jmp forShift2
+         fiShift2:
+            sub rax, 8; i--
+            jmp forShift
 
 
+      fiShift:
+         mov rax, r8 ; retornem per rax el nombre de desplçaments fets
 
-   mov rsp, rbp
-   pop rbp
-   ret
+         pop r15
+         pop r14
+         pop r13
+         pop r12
+         pop r11
+         pop r10
+         pop r9
+         pop r8
+         pop rsi
+         pop rdx
+         pop rcx
+         pop rbx
+
+         mov rsp, rbp
+         pop rbp
+         ret
 
 
 ;;;;;
