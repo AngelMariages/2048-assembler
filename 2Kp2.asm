@@ -495,12 +495,80 @@ updateBoardP2:
 rotateMatrixRP2:
    push rbp
    mov  rbp, rsp
+   ;guardem l'estat dels registres del processador perquè
+   ;les funcions de C no mantenen l'estat dels registres.
+
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
+   push r14
+   push r15
+
+   mov rax, 0
+   mov rdx, 6
+
+   forRotate:
+      cmp rax, DimMatrix*8
+      jl certRotate
+      jmp fiRotate
+
+      certRotate:
+         mov rbx, 0
+         mov rsi, 0
+
+         forRotate2:
+            cmp rbx, DimMatrix*2
+            jl certRotate2
+            jmp fiRotate2
+
+         certRotate2:
+            push rax ; màxim dos regstres en la computació d'addreçes
+            add rax,rbx
+
+            mov cx, [edi+eax]
+            mov WORD[mRotated+rsi+rdx], cx
+
+            pop rax ; retornem el valor original de rax
+
+            add rbx, 2; j++
+            add rsi, 8
+            jmp forRotate2
+         fiRotate2:
+            add rax, 8; i++
+            sub rdx, 2
+            jmp forRotate
 
 
+      fiRotate:
+         ; destinació ja es edi -> m
+         mov esi, mRotated ; origen
+         call copyMatrixP2
 
-   mov rsp, rbp
-   pop rbp
-   ret
+         pop r15
+         pop r14
+         pop r13
+         pop r12
+         pop r11
+         pop r10
+         pop r9
+         pop r8
+         pop rsi
+         pop rdx
+         pop rcx
+         pop rbx
+         pop rax
+
+         mov rsp, rbp
+         pop rbp
+         ret
 
 
 ;;;;;
@@ -528,12 +596,70 @@ rotateMatrixRP2:
 copyMatrixP2:
    push rbp
    mov  rbp, rsp
+   ;guardem l'estat dels registres del processador perquè
+   ;les funcions de C no mantenen l'estat dels registres.
 
+   push rax
+   push rbx
+   push rcx
+   push rdx
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
+   push r14
+   push r15
 
+   mov rax, 0
 
-   mov rsp, rbp
-   pop rbp
-   ret
+   forCopy:
+      cmp rax, DimMatrix*8
+      jl certCopy
+      jmp fiCopy
+
+      certCopy:
+         mov rbx, 0
+
+         forCopy2:
+            cmp rbx, DimMatrix*2
+            jl certCopy2
+            jmp fiCopy2
+
+         certCopy2:
+            push rax ; guardem rax
+
+            add rax, rbx
+
+            mov cx, WORD[esi+eax]
+            mov WORD[edi+eax], cx
+
+            pop rax; tornem el valor de rax
+
+            add rbx, 2; j++
+            jmp forCopy2
+         fiCopy2:
+            add rax, 8; i++
+            jmp forCopy
+
+      fiCopy:
+         pop r15
+         pop r14
+         pop r13
+         pop r12
+         pop r11
+         pop r10
+         pop r9
+         pop r8
+         pop rdx
+         pop rcx
+         pop rbx
+         pop rax
+
+         mov rsp, rbp
+         pop rbp
+         ret
 
 
 ;;;;;
