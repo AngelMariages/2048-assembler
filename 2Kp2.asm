@@ -403,13 +403,13 @@ updateBoardP2:
       certUpdate2:
          movzx ecx, WORD[m+rax+rsi]
 
-         push rdi ; fila
-         push rsi ; columna
-         push rdx ; numero
+         push rdi
+         push rsi
+         push rdx
 
-         mov rdi, rbx
-         mov rsi, rdx
-         mov edx, ecx
+         mov edi, ebx ; fila
+         mov esi, edx  ; columna
+         mov edx, ecx ; numero
 
          call showNumberP2
 
@@ -432,10 +432,10 @@ updateBoardP2:
       push rsi ; columna
       push rdx ; numero
 
-      mov rax, rdi
-      mov rdi, 18
-      mov rsi, 26
-      mov rdx, rax
+      mov eax, edi
+      mov edi, 18
+      mov esi, 26
+      mov edx, eax
 
       call showNumberP2
 
@@ -802,7 +802,7 @@ shiftNumbersRP2:
 
 
       fiShift:
-         mov rax, r8 ; retornem per rax el nombre de desplçaments fets
+         mov eax, r8d ; retornem per rax el nombre de desplçaments fets
 
          pop r15
          pop r14
@@ -855,12 +855,108 @@ shiftNumbersRP2:
 addPairsRP2:
    push rbp
    mov  rbp, rsp
+   ;guardem l'estat dels registres del processador perquè
+   ;les funcions de C no mantenen l'estat dels registres.
+
+   push rbx
+   push rcx
+   push rdx
+   push rsi
+   push r8
+   push r9
+   push r10
+   push r11
+   push r12
+   push r13
+   push r14
+   push r15
+
+mov rax, 0
+
+   mov rsi, DimMatrix*8
+   sub rsi, 8
+
+   forPairs:
+      cmp rsi, 0
+      jge certPairs
+      jmp fiPairs
+
+      certPairs:
+         mov rbx, DimMatrix*2
+         sub rbx, 2
+
+         forPairs2:
+            cmp rbx, 0
+            jg certPairs2
+            jmp fiPairs2
+
+         certPairs2:
+            push rsi ; guardem rsi
+
+            add rsi, rbx
+
+            mov cx, [rdi+rsi]
+
+            pop rsi ; tornem el valor de rsi
+
+            cmp cx, 0
+            je fiIfPairs
+
+            push rsi ; guardem rsi
+
+            add rsi, rbx
+
+            mov dx, [rdi+rsi-2]
+
+            pop rsi ; tornem el valor de rsi
+
+            cmp cx, dx
+            jne fiIfPairs
+
+            certIfParis:
+               push rax
+
+               mov eax, 2
+               mul cx
+
+               push rsi ; guardem rsi
+
+               add rsi, rbx
+
+               mov [rdi+rsi], ax
+               mov WORD[rdi+rsi-2], 0
+
+               pop rsi ; tornem el valor de rsi
+
+               movzx rcx, ax
+               pop rax
+               add rax, rcx
+
+            fiIfPairs:
+               sub rbx, 2; j--
+               jmp forPairs2
+         fiPairs2:
+            sub rsi, 8; i--
+            jmp forPairs
 
 
+      fiPairs:
+         pop r15
+         pop r14
+         pop r13
+         pop r12
+         pop r11
+         pop r10
+         pop r9
+         pop r8
+         pop rsi
+         pop rdx
+         pop rcx
+         pop rbx
 
-   mov rsp, rbp
-   pop rbp
-   ret
+         mov rsp, rbp
+         pop rbp
+         ret
 
 
 
