@@ -31,31 +31,31 @@ extern  int developer;	     //Variable declarada en assemblador que indica el no
 // WORD[M+indexMat] (WORD perquè és de tipus short)
 // (indexMat ha de ser un registre de tipus long/QWORD:RAX,RBX,..,RSI,RDI,..,R15).
 short m[DimMatrix][DimMatrix]        = { {    8,    8,    32,    32},
-                                         {    4,   32,   128,    64},
-                                         {    0,    0,   256,   128},
-                                         {    0,    4,   512,  1024} };
+										 {    4,   32,   128,    64},
+										 {    0,    0,   256,   128},
+										 {    0,    4,   512,  1024} };
 
 short mRotated[DimMatrix][DimMatrix] = { {    2,    0,     2,     0},
-                                         {    2,    2,     4,     4},
-                                         {    4,    4,     0,     4},
-                                         {    4,    2,     2,     4} };
+										 {    2,    2,     4,     4},
+										 {    4,    4,     0,     4},
+										 {    4,    2,     2,     4} };
 
 short mAux[DimMatrix][DimMatrix]     = { {    0,    0,     0,     0},
-                                         {    0,    0,     0,     0},
-                                         {    0,    0,     0,     0},
-                                         {    0,    0,     0,     0} };
+										 {    0,    0,     0,     0},
+										 {    0,    0,     0,     0},
+										 {    0,    0,     0,     0} };
 
 short mUndo[DimMatrix][DimMatrix]    = { {    0,    1,     3,     7},
-                                         {   15,   31,    63,   127},
-                                         {  255,  511,  1023,  2047},
-                                         { 4095, 8191, 16383, 32767},};
+										 {   15,   31,    63,   127},
+										 {  255,  511,  1023,  2047},
+										 { 4095, 8191, 16383, 32767},};
 
 char state = '1';   // 0: Sortir, hem premut la tecla 'ESC' per a sortir.
-			        // 1: Continuem jugant.
-			        // 2: Continuem jugant però hi han hagut canvis a la matriu.
-			        // 3: Desfer últim moviment.
-				    // 4: Guanyat, s'han arribat a la casella 2048.
-				    // 5: Perdut, no es poden fer moviments.
+					// 1: Continuem jugant.
+					// 2: Continuem jugant però hi han hagut canvis a la matriu.
+					// 3: Desfer últim moviment.
+					// 4: Guanyat, s'han arribat a la casella 2048.
+					// 5: Perdut, no es poden fer moviments.
 
 /**
  * Definició de les funcions de C
@@ -113,7 +113,7 @@ extern void  playP2();
  */
 void clearScreen_C(){
 
-    printf("\x1B[2J");
+	printf("\x1B[2J");
 
 }
 
@@ -141,7 +141,7 @@ void clearScreen_C(){
  */
 void gotoxyP2_C(int rowScreen, int colScreen){
 
-   printf("\x1B[%d;%dH",rowScreen,colScreen);
+	printf("\x1B[%d;%dH",rowScreen,colScreen);
 
 }
 
@@ -167,7 +167,7 @@ void gotoxyP2_C(int rowScreen, int colScreen){
  */
 void printchP2_C(char c){
 
-   printf("%c",c);
+	printf("%c",c);
 
 }
 
@@ -193,32 +193,32 @@ void printchP2_C(char c){
  */
 char getchP2_C(){
 
-   int c;
+	int c;
 
-   static struct termios oldt, newt;
+	static struct termios oldt, newt;
 
-   /*tcgetattr obtenir els paràmetres del terminal
-   STDIN_FILENO indica que s'escriguin els paràmetres de l'entrada estàndard (STDIN) sobre oldt*/
-   tcgetattr( STDIN_FILENO, &oldt);
-   /*es copien els paràmetres*/
-   newt = oldt;
+	/*tcgetattr obtenir els paràmetres del terminal
+	STDIN_FILENO indica que s'escriguin els paràmetres de l'entrada estàndard (STDIN) sobre oldt*/
+	tcgetattr( STDIN_FILENO, &oldt);
+	/*es copien els paràmetres*/
+	newt = oldt;
 
-   /* ~ICANON per a tractar l'entrada de teclat caràcter a caràcter no com a línia sencera acabada amb /n
-      ~ECHO per a què no mostri el caràcter llegit*/
-   newt.c_lflag &= ~(ICANON | ECHO);
+	/* ~ICANON per a tractar l'entrada de teclat caràcter a caràcter no com a línia sencera acabada amb /n
+		~ECHO per a què no mostri el caràcter llegit*/
+	newt.c_lflag &= ~(ICANON | ECHO);
 
-   /*Fixar els nous paràmetres del terminal per a l'entrada estàndard (STDIN)
-   TCSANOW indica a tcsetattr que canvii els paràmetres immediatament. */
-   tcsetattr( STDIN_FILENO, TCSANOW, &newt);
+	/*Fixar els nous paràmetres del terminal per a l'entrada estàndard (STDIN)
+	TCSANOW indica a tcsetattr que canvii els paràmetres immediatament. */
+	tcsetattr( STDIN_FILENO, TCSANOW, &newt);
 
-   /*Llegir un caràcter*/
-   c=getchar();
+	/*Llegir un caràcter*/
+	c=getchar();
 
-   /*restaurar els paràmetres originals*/
-   tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
+	/*restaurar els paràmetres originals*/
+	tcsetattr( STDIN_FILENO, TCSANOW, &oldt);
 
-   /*Retornar el caràcter llegit*/
-   return (char)c;
+	/*Retornar el caràcter llegit*/
+	return (char)c;
 
 }
 
@@ -241,36 +241,36 @@ char getchP2_C(){
  */
 char printMenuP2_C(){
 
- 	clearScreen_C();
-    gotoxyP2_C(1,1);
-    printf("                                    \n");
-    printf("           Developed by:            \n");
+	 clearScreen_C();
+	gotoxyP2_C(1,1);
+	printf("                                    \n");
+	printf("           Developed by:            \n");
 	printf("        ( %s )   \n",(char *)&developer);
-    printf(" __________________________________ \n");
-    printf("|                                  |\n");
-    printf("|            MAIN MENU             |\n");
-    printf("|__________________________________|\n");
-    printf("|                                  |\n");
-    printf("|         1. ShowNumber            |\n");
-    printf("|         2. UpdateBoard           |\n");
-    printf("|         3. CopyMatrix            |\n");
-    printf("|         4. RotateMatrix          |\n");
-    printf("|         5. ShiftNumbers          |\n");
-    printf("|         6. AddPairs              |\n");
-    printf("|         7. CheckEnd              |\n");
-    printf("|         8. Play Game             |\n");
-    printf("|         9. Play Game C           |\n");
-    printf("|         0. Exit                  |\n");
-    printf("|__________________________________|\n");
-    printf("|                                  |\n");
-    printf("|            OPTION:               |\n");
-    printf("|__________________________________|\n");
+	printf(" __________________________________ \n");
+	printf("|                                  |\n");
+	printf("|            MAIN MENU             |\n");
+	printf("|__________________________________|\n");
+	printf("|                                  |\n");
+	printf("|         1. ShowNumber            |\n");
+	printf("|         2. UpdateBoard           |\n");
+	printf("|         3. CopyMatrix            |\n");
+	printf("|         4. RotateMatrix          |\n");
+	printf("|         5. ShiftNumbers          |\n");
+	printf("|         6. AddPairs              |\n");
+	printf("|         7. CheckEnd              |\n");
+	printf("|         8. Play Game             |\n");
+	printf("|         9. Play Game C           |\n");
+	printf("|         0. Exit                  |\n");
+	printf("|__________________________________|\n");
+	printf("|                                  |\n");
+	printf("|            OPTION:               |\n");
+	printf("|__________________________________|\n");
 
-    char charac =' ';
-    while (charac < '0' || charac > '9') {
-      gotoxyP2_C(21,22);          //posicionar el cursor
-	  charac = getchP2_C();       //Llegir una opció
-	  printchP2_C(charac);		  //Mostrar opció
+	char charac =' ';
+	while (charac < '0' || charac > '9') {
+		gotoxyP2_C(21,22);          //posicionar el cursor
+		charac = getchP2_C();       //Llegir una opció
+		printchP2_C(charac);		  //Mostrar opció
 	}
 	return charac;
 
@@ -295,29 +295,29 @@ char printMenuP2_C(){
  */
 void printBoardP2_C(){
 
-   gotoxyP2_C(1,1);
-   printf(" _________________________________________________  \n"); //01
-   printf("|                                                  |\n"); //02
-   printf("|                  2048 PUZZLE  v2.0               |\n"); //03
-   printf("|                                                  |\n"); //04
-   printf("|     Join the numbers and get to the 2048 tile!   |\n"); //05
-   printf("|__________________________________________________|\n"); //06
-   printf("|                                                  |\n"); //07
-   printf("|            0        1        2        3          |\n"); //08
-   printf("|        +--------+--------+--------+--------+     |\n"); //09
-   printf("|      0 |        |        |        |        |     |\n"); //10
-   printf("|        +--------+--------+--------+--------+     |\n"); //11
-   printf("|      1 |        |        |        |        |     |\n"); //12
-   printf("|        +--------+--------+--------+--------+-    |\n"); //13
-   printf("|      2 |        |        |        |        |     |\n"); //14
-   printf("|        +--------+--------+--------+--------+     |\n"); //15
-   printf("|      3 |        |        |        |        |     |\n"); //16
-   printf("|        +--------+--------+--------+--------+     |\n"); //17
-   printf("|          Score:   ______                         |\n"); //18
-   printf("|__________________________________________________|\n"); //19
-   printf("|                                                  |\n"); //20
-   printf("| (ESC)Exit (u)Undo (i)Up (j)Left (k)Down (l)Right |\n"); //21
-   printf("|__________________________________________________|\n"); //22
+	gotoxyP2_C(1,1);
+	printf(" _________________________________________________  \n"); //01
+	printf("|                                                  |\n"); //02
+	printf("|                  2048 PUZZLE  v2.0               |\n"); //03
+	printf("|                                                  |\n"); //04
+	printf("|     Join the numbers and get to the 2048 tile!   |\n"); //05
+	printf("|__________________________________________________|\n"); //06
+	printf("|                                                  |\n"); //07
+	printf("|            0        1        2        3          |\n"); //08
+	printf("|        +--------+--------+--------+--------+     |\n"); //09
+	printf("|      0 |        |        |        |        |     |\n"); //10
+	printf("|        +--------+--------+--------+--------+     |\n"); //11
+	printf("|      1 |        |        |        |        |     |\n"); //12
+	printf("|        +--------+--------+--------+--------+-    |\n"); //13
+	printf("|      2 |        |        |        |        |     |\n"); //14
+	printf("|        +--------+--------+--------+--------+     |\n"); //15
+	printf("|      3 |        |        |        |        |     |\n"); //16
+	printf("|        +--------+--------+--------+--------+     |\n"); //17
+	printf("|          Score:   ______                         |\n"); //18
+	printf("|__________________________________________________|\n"); //19
+	printf("|                                                  |\n"); //20
+	printf("| (ESC)Exit (u)Undo (i)Up (j)Left (k)Down (l)Right |\n"); //21
+	printf("|__________________________________________________|\n"); //22
 
 }
 
@@ -363,17 +363,17 @@ void printBoardP2_C(){
 	char charac;
 	int  i;
 
-    if (n > 999999) n = 999999;
+	if (n > 999999) n = 999999;
 	for (i=0;i<6;i++){
-	  charac = ' ';
-	  if (n > 0) {
-		charac = n%10;	//residu
-		n = n/10;		//quocient
-		charac = charac + '0';
-	  }
-	  gotoxyP2_C(rScreen, cScreen);
-	  printchP2_C(charac);
-	  cScreen--;
+		charac = ' ';
+		if (n > 0) {
+			charac = n%10;	//residu
+			n = n/10;		//quocient
+			charac = charac + '0';
+		}
+		gotoxyP2_C(rScreen, cScreen);
+		printchP2_C(charac);
+		cScreen--;
 	}
 
 }
@@ -413,14 +413,14 @@ void updateBoardP2_C(int scr){
    rScreen = 10;
    for (i=0;i<DimMatrix;i++){
 	  cScreen = 17;
-      for (j=0;j<DimMatrix;j++){
-         showNumberP2_C(rScreen,cScreen, m[i][j]);
-         cScreen = cScreen + 9;
-      }
-      rScreen = rScreen + 2;
-   }
-   showNumberP2_C(18, 26, scr);
-   gotoxyP2_C(18,28);
+	  for (j=0;j<DimMatrix;j++){
+		 showNumberP2_C(rScreen,cScreen, m[i][j]);
+		 cScreen = cScreen + 9;
+	  }
+	  rScreen = rScreen + 2;
+	}
+	showNumberP2_C(18, 26, scr);
+	gotoxyP2_C(18,28);
 
 }
 
@@ -538,22 +538,22 @@ int shiftNumbersRP2_C(short mShift[DimMatrix][DimMatrix]) {
 	int shifts=0;
 
 	for (i=DimMatrix-1; i>=0; i--) {
-      for (j=DimMatrix-1; j>0; j--) {
-        if (mShift[i][j] == 0) {
-          k = j-1;
-          while (k>=0 && mShift[i][k]==0) k--;
-          if (k==-1) {
-             j=0;
-          } else {
-              mShift[i][j]=mShift[i][k];
-              mShift[i][k]= 0;
-              shifts++;
-          }
-        }
-      }
-    }
+	  for (j=DimMatrix-1; j>0; j--) {
+		if (mShift[i][j] == 0) {
+		  k = j-1;
+		  while (k>=0 && mShift[i][k]==0) k--;
+		  if (k==-1) {
+			 j=0;
+		  } else {
+				mShift[i][j]=mShift[i][k];
+				mShift[i][k]= 0;
+				shifts++;
+		  }
+		}
+	  }
+	}
 
-    return shifts;
+	return shifts;
 
 }
 
@@ -591,7 +591,7 @@ int addPairsRP2_C(short mPairs[DimMatrix][DimMatrix]) {
 	int p = 0;
 
 	for (i=DimMatrix-1; i>=0; i--) {
-      for (j=DimMatrix-1; j>0; j--) {
+	  for (j=DimMatrix-1; j>0; j--) {
 			if ((mPairs[i][j]!=0) && (mPairs[i][j]==mPairs[i][j-1])) {
 				mPairs[i][j]  = mPairs[i][j]*2;
 				mPairs[i][j-1]= 0;
@@ -654,55 +654,55 @@ int readKeyP2_C(int actualScore){
    c = getchP2_C();	//llegir una tecla i guardar-la a la variable c.
 
    switch(c){
-      case 'i': //i:(105) amunt
-         rotateMatrixRP2_C(m);
+	  case 'i': //i:(105) amunt
+		 rotateMatrixRP2_C(m);
 
-         s1 = shiftNumbersRP2_C(m);
-         p  = addPairsRP2_C(m);
-         s2 = shiftNumbersRP2_C(m);
-         actualScore = actualScore + p;
-         if ( (s1>0) || (p>0) || (s2>0) ) state = '2';
-
-         rotateMatrixRP2_C(m);
-         rotateMatrixRP2_C(m);
-         rotateMatrixRP2_C(m);
-
-      break;
-      case 'j': //j:(106) esquerra
-         rotateMatrixRP2_C(m);
-         rotateMatrixRP2_C(m);
-
-         s1 = shiftNumbersRP2_C(m);
-         p  = addPairsRP2_C(m);
-         s2 = shiftNumbersRP2_C(m);
-         actualScore = actualScore + p;
-         if ( (s1>0) || (p>0) || (s2>0) ) state = '2';
-
-         rotateMatrixRP2_C(m);
-         rotateMatrixRP2_C(m);
-      break;
-      case 'k': //k:(107) avall
-         rotateMatrixRP2_C(m);
-         rotateMatrixRP2_C(m);
-         rotateMatrixRP2_C(m);
-
-         s1 = shiftNumbersRP2_C(m);
-         p  = addPairsRP2_C(m);
-         s2 = shiftNumbersRP2_C(m);
-         actualScore = actualScore + p;
-         if ( (s1>0) || (p>0) || (s2>0) ) state = '2';
+		 s1 = shiftNumbersRP2_C(m);
+		 p  = addPairsRP2_C(m);
+		 s2 = shiftNumbersRP2_C(m);
+		 actualScore = actualScore + p;
+		 if ( (s1>0) || (p>0) || (s2>0) ) state = '2';
 
 		 rotateMatrixRP2_C(m);
-      break;
-      case 'l': //l:(108) dreta
-         s1 = shiftNumbersRP2_C(m);
-         p  = addPairsRP2_C(m);
-         s2 = shiftNumbersRP2_C(m);
-         actualScore = actualScore + p;
-         if ( (s1>0) || (p>0) || (s2>0) ) state = '2';
-      break;
+		 rotateMatrixRP2_C(m);
+		 rotateMatrixRP2_C(m);
+
+	  break;
+	  case 'j': //j:(106) esquerra
+		 rotateMatrixRP2_C(m);
+		 rotateMatrixRP2_C(m);
+
+		 s1 = shiftNumbersRP2_C(m);
+		 p  = addPairsRP2_C(m);
+		 s2 = shiftNumbersRP2_C(m);
+		 actualScore = actualScore + p;
+		 if ( (s1>0) || (p>0) || (s2>0) ) state = '2';
+
+		 rotateMatrixRP2_C(m);
+		 rotateMatrixRP2_C(m);
+	  break;
+	  case 'k': //k:(107) avall
+		 rotateMatrixRP2_C(m);
+		 rotateMatrixRP2_C(m);
+		 rotateMatrixRP2_C(m);
+
+		 s1 = shiftNumbersRP2_C(m);
+		 p  = addPairsRP2_C(m);
+		 s2 = shiftNumbersRP2_C(m);
+		 actualScore = actualScore + p;
+		 if ( (s1>0) || (p>0) || (s2>0) ) state = '2';
+
+		 rotateMatrixRP2_C(m);
+	  break;
+	  case 'l': //l:(108) dreta
+		 s1 = shiftNumbersRP2_C(m);
+		 p  = addPairsRP2_C(m);
+		 s2 = shiftNumbersRP2_C(m);
+		 actualScore = actualScore + p;
+		 if ( (s1>0) || (p>0) || (s2>0) ) state = '2';
+	  break;
 	  case 'u': //u:(117) Desfer jugada
-         state = '3';
+		 state = '3';
 	  break;
 	  case 27: //ESC:(27) Sortir del programa
 		 state = '0';
@@ -865,31 +865,31 @@ void checkEndP2_C() {
 void printMessageP2_C() {
 
    switch(state){
-      case '0':
+	  case '0':
+		gotoxyP2_C(23,12);
+		printf("<<<<<< EXIT: (ESC) Pressed >>>>>>");
+		getchP2_C();
+		break;
+	  case '4':
 		 gotoxyP2_C(23,12);
-         printf("<<<<<< EXIT: (ESC) Pressed >>>>>>");
-         getchP2_C();
-        break;
-      case '4':
+		 printf("++++++ 2048!!!  YOU  W I N ++++++");
+		 getchP2_C();
+	  break;
+	  case '5':
 		 gotoxyP2_C(23,12);
-         printf("++++++ 2048!!!  YOU  W I N ++++++");
-         getchP2_C();
-      break;
-      case '5':
-		 gotoxyP2_C(23,12);
-         printf("---- G A M E   O V E R ! ! ! ----");
-         gotoxyP2_C(24,12);
-         printf("---- (u)Undo  (Any key) EXIT ----");
-         char c;
+		 printf("---- G A M E   O V E R ! ! ! ----");
+		 gotoxyP2_C(24,12);
+		 printf("---- (u)Undo  (Any key) EXIT ----");
+		 char c;
 		 c = getchP2_C();
 		 if (c == 'u') { //u:(117) Desfer jugada
 			gotoxyP2_C(23,12);
 			printf("                                  ");
 			gotoxyP2_C(24,12);
-            printf("                                  ");
-            state='3';
+			printf("                                  ");
+			state='3';
 		 }
-      break;
+	  break;
    }
 
 }
@@ -940,14 +940,14 @@ void printMessageP2_C() {
  */
 void playP2_C(){
 
-   int score     = 290500; // Punts acumulats al marcador.
-   int scoreAux  = 0;
-   int scoreUndo = 1; // Punts que s'han fet a la jugada anterior.
+	int score     = 290500; // Punts acumulats al marcador.
+	int scoreAux  = 0;
+	int scoreUndo = 1; // Punts que s'han fet a la jugada anterior.
 
-   state = '1';
-   clearScreen_C();
-   printBoardP2_C();
-   updateBoardP2_C(score);
+	state = '1';
+	clearScreen_C();
+	printBoardP2_C();
+	updateBoardP2_C(score);
 
    while (state == '1') {  	  //Bucle principal.
 	 copyMatrixP2_C(mAux,m);  //Per fer l'Undo si es fan moviments
@@ -961,18 +961,18 @@ void playP2_C(){
 	 }
 	 if (state == '3') {       //Desfer últim moviment
 		 copyMatrixP2_C(m,mUndo);
-         score = scoreUndo;
-         state = '1';
-     }
-     updateBoardP2_C(score);
+		 score = scoreUndo;
+		 state = '1';
+	 }
+	 updateBoardP2_C(score);
 	 checkEndP2_C();
 	 printMessageP2_C(); //Mostra el missatge per a indicar com acaba.
 	 if (state == '3') {       //Desfer últim moviment
 		 copyMatrixP2_C(m,mUndo);
-         score = scoreUndo;
-         state = '1';
-         updateBoardP2_C(score);
-     }
+		 score = scoreUndo;
+		 state = '1';
+		 updateBoardP2_C(score);
+	 }
   }
 
 }
@@ -995,108 +995,108 @@ int main(){
    while (op!='0') {
 	  op = printMenuP2_C();	//Mostrar menú i llegir opció
 
-      switch(op){
-         case '1':// Mostrar punts
-            clearScreen_C();
-            printBoardP2_C();
-            gotoxyP2_C(18, 30);
-            printf(" Press any key ");
-            //=======================================================
-            showNumberP2(18, 26, score);
-            //showNumberP2_C(18, 26, score);
-            //=======================================================
-            getchP2_C();
-         break;
-         case '2': //Actualitzar el contingut del tauler.
-            clearScreen_C();
-            printBoardP2_C();
-            //=======================================================
-            updateBoardP2(score);
-            //updateBoardP2_C(score);
-            //=======================================================
-            gotoxyP2_C(18, 30);
-            printf("Press any key ");
-            getchP2_C();
-         break;
-         case '3': //Copiar matrius i marcador
-            clearScreen_C();
-            printBoardP2_C();
-            int scoreUndu = 500;
-            //=======================================================
-            copyMatrixP2(m, mUndo);
-            //copyMatrixP2_C(m, mUndo);
-            //=======================================================
-            updateBoardP2_C(scoreUndu);
-            gotoxyP2_C(18, 30);
+	  switch(op){
+		 case '1':// Mostrar punts
+			clearScreen_C();
+			printBoardP2_C();
+			gotoxyP2_C(18, 30);
+			printf(" Press any key ");
+			//=======================================================
+			showNumberP2(18, 26, score);
+			//showNumberP2_C(18, 26, score);
+			//=======================================================
+			getchP2_C();
+		 break;
+		 case '2': //Actualitzar el contingut del tauler.
+			clearScreen_C();
+			printBoardP2_C();
+			//=======================================================
+			updateBoardP2(score);
+			//updateBoardP2_C(score);
+			//=======================================================
+			gotoxyP2_C(18, 30);
 			printf("Press any key ");
-	        getchP2_C();
-         break;
-         case '4': //Rotar matriu a la dreta
-            clearScreen_C();
-            printBoardP2_C();
-            //===================================================
-            rotateMatrixRP2(m);
+			getchP2_C();
+		 break;
+		 case '3': //Copiar matrius i marcador
+			clearScreen_C();
+			printBoardP2_C();
+			int scoreUndu = 500;
+			//=======================================================
+			copyMatrixP2(m, mUndo);
+			//copyMatrixP2_C(m, mUndo);
+			//=======================================================
+			updateBoardP2_C(scoreUndu);
+			gotoxyP2_C(18, 30);
+			printf("Press any key ");
+			getchP2_C();
+		 break;
+		 case '4': //Rotar matriu a la dreta
+			clearScreen_C();
+			printBoardP2_C();
+			//===================================================
+			rotateMatrixRP2(m);
 			//rotateMatrixRP2_C(m);
 			//===================================================
-            updateBoardP2_C(score);
-            gotoxyP2_C(18, 30);
+			updateBoardP2_C(score);
+			gotoxyP2_C(18, 30);
 			printf("Press any key ");
-	        getchP2_C();
-          break;
-          case '5': //Desplaça números a la dreta
-            clearScreen_C();
-            printBoardP2_C();
-            //===================================================
-            shiftNumbersRP2(m);
+			getchP2_C();
+		  break;
+		  case '5': //Desplaça números a la dreta
+			clearScreen_C();
+			printBoardP2_C();
+			//===================================================
+			shiftNumbersRP2(m);
 			//shiftNumbersRP2_C(m);
 			//===================================================
-            updateBoardP2_C(score);
-            gotoxyP2_C(18, 30);
+			updateBoardP2_C(score);
+			gotoxyP2_C(18, 30);
 			printf("Press any key ");
-	        getchP2_C();
-          break;
-          case '6': //Sumar parelles
-            clearScreen_C();
-            printBoardP2_C();
-            score = 1000;
-            //===================================================
+			getchP2_C();
+		  break;
+		  case '6': //Sumar parelles
+			clearScreen_C();
+			printBoardP2_C();
+			score = 1000;
+			//===================================================
 			score = score + addPairsRP2(m);
 			//score = score + addPairsRP2_C(m);
 			//===================================================
 			updateBoardP2_C(score);
 			gotoxyP2_C(18, 30);
 			printf("Press any key ");
-	        getchP2_C();
-         break;
-         case '7': //Verificar si hi ha el 2048 o si no es pot fer algun moviment.
-            clearScreen_C();
-            printBoardP2_C();
-            updateBoardP2_C(score);
-            //===================================================
+			getchP2_C();
+		 break;
+		 case '7': //Verificar si hi ha el 2048 o si no es pot fer algun moviment.
+			clearScreen_C();
+			printBoardP2_C();
+			updateBoardP2_C(score);
+			//===================================================
 			checkEndP2();
 			//checkEndP2_C();
 			//===================================================
 			printMessageP2_C();
 			if ((state!='4') && (state!='5')) {
-			   gotoxyP2_C(18, 30);
-			   printf("Press any key ");
-	           getchP2_C();
-	        }
-         break;
-         case '8': //Joc complet Assemblador
-            //=======================================================
-            playP2();
-            //=======================================================
-         break;
-         case '9': //Joc complet C
-            //=======================================================
-            playP2_C();
-            //=======================================================
-         break;
-      }
-   }
-   printf("\n\n");
+				gotoxyP2_C(18, 30);
+				printf("Press any key ");
+				getchP2_C();
+			}
+		 break;
+		 case '8': //Joc complet Assemblador
+			//=======================================================
+			playP2();
+			//=======================================================
+		 break;
+		 case '9': //Joc complet C
+			//=======================================================
+			playP2_C();
+			//=======================================================
+		 break;
+	  }
+	}
+	printf("\n\n");
 
-   return 0;
+	return 0;
 
 }
