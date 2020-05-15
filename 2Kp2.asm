@@ -324,35 +324,21 @@ showNumberP2:
          inc rax
       jmp for
    fi:
+      pop r15
+      pop r14
+      pop r13
+      pop r12
+      pop r11
+      pop r10
+      pop r9
+      pop r8
+      pop rcx
+      pop rbx
+      pop rax
 
-; ----------
-;  call gotoxyP2
-;   push rdi
-
- ;  mov dil, 3
- ;  add dil, '0'
-  ; call printchP2
-
-   ;pop rdi
-   ;dec rsi
-; --------
-
-
-   pop r15
-   pop r14
-   pop r13
-   pop r12
-   pop r11
-   pop r10
-   pop r9
-   pop r8
-   pop rcx
-   pop rbx
-   pop rax
-
-   mov rsp, rbp
-   pop rbp
-   ret
+      mov rsp, rbp
+      pop rbp
+      ret
 
 
 ;;;;;
