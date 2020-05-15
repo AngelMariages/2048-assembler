@@ -322,7 +322,7 @@ showNumberP2:
          dec rsi
 
          inc rax
-      jmp for
+         jmp for
    fi:
       pop r15
       pop r14
@@ -438,6 +438,10 @@ updateBoardP2:
       mov edx, eax
 
       call showNumberP2
+
+      mov edi, 18
+      mov esi, 28
+      call gotoxyP2
 
       pop rax
       pop rdx
